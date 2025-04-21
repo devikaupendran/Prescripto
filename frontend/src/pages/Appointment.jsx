@@ -85,11 +85,12 @@ const Appointment = () => {
                 const slotTime = formattedTime.split(",")[1].trim();
 
                 const isSlotAvailable = docInfo.slots_booked[slotDate] && docInfo.slots_booked[slotDate].includes(slotTime) ? false : true;
-                if (isSlotAvailable){
+                if (isSlotAvailable) {
                     // Add slot to array
                     timeSlots.push({
                         dateTime: new Date(currentDate),
                         time: formattedTime,
+                        dayString: currentDate.toDateString(), //"Sat Apr 19 2025"
                     });
                 }
 
@@ -133,12 +134,11 @@ const Appointment = () => {
     }, [doctors, docId]);
 
     useEffect(() => {
-        getAvailableSlot();
-    }, [docInfo]);
+        if (docInfo) {
+            getAvailableSlot();
+        }
 
-    useEffect(() => {
-        console.log(docSlots);
-    }, [docSlots]);
+    }, [docInfo]);
 
     //if docInfo has value then only display the data
     return (
@@ -191,8 +191,11 @@ const Appointment = () => {
                 <div className="sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700">
                     <p>Booking slots</p>
                     <div className="flex gap-3 items-center w-full overflow-x-scroll mt-4">
-                        {docSlots.length &&
+                        {
+                            // if the docSlot length  is not zero and  then only display it in this format  
+                            docSlots.length &&
                             docSlots.map((item, index) => {
+                                console.log(daysOfWeek[item[0].dateTime.getDay()])
                                 return (
                                     <div
                                         onClick={() => setSlotIndex(index)}
@@ -206,14 +209,20 @@ const Appointment = () => {
                                         <p>{item[0] && item[0].dateTime.getDate()}</p>
                                     </div>
                                 );
-                            })}
+                            })
+                        }
                     </div>
+
+                    <h2 className="my-4 text-sm">
+                        Available Times for {docSlots[slotIndex]?.[0]?.dayString || "N/A"}
+                    </h2>
 
                     {/*---------- time section ---------- */}
                     <div className="flex items-center gap-3 w-full overflow-x-scroll mt-4">
-                        {docSlots.length &&
+                        {
+                            docSlots.length &&
                             docSlots[slotIndex].map((item, index) => {
-                                let time = item.time.split(",")[1].trim()
+                                let time = item.time.toLowerCase().split(",")[1].trim()
                                 return (
 
                                     <p
@@ -227,7 +236,8 @@ const Appointment = () => {
                                         {time}
                                     </p>
                                 );
-                            })}
+                            })
+                        }
                     </div>
 
                     {/* book appointment button  */}
